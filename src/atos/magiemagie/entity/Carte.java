@@ -6,6 +6,7 @@
 package atos.magiemagie.entity;
 
 import java.io.Serializable;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -36,6 +37,7 @@ public class Carte implements Serializable {
 
     
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private typeCarte ingredient;
     
     public Joueur getJoueurProprietaire() {
@@ -44,6 +46,14 @@ public class Carte implements Serializable {
 
     public void setJoueurProprietaire(Joueur joueurProprietaire) {
         this.joueurProprietaire = joueurProprietaire;
+    }
+
+    public typeCarte getIngredient() {
+        return ingredient;
+    }
+
+    public void setIngredient(typeCarte ingredient) {
+        this.ingredient = ingredient;
     }
     
     

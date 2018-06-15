@@ -28,7 +28,7 @@ public class Partie implements Serializable {
     private Long id;
 
     
-    @OneToMany (mappedBy = "partieActuelle")
+    @OneToMany (mappedBy = "partie")
     private List<Joueur> joueurs = new ArrayList<>();
    
     @Column(nullable = false)
@@ -38,6 +38,8 @@ public class Partie implements Serializable {
         return joueurs;
     }
 
+    
+    
     public void setJoueurs(List<Joueur> joueurs) {
         this.joueurs = joueurs;
     }

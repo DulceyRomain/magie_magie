@@ -33,14 +33,14 @@ public class Joueur implements Serializable {
 
     @JoinColumn
     @ManyToOne
-    private Partie partieActuelle;
+    private Partie partie;
     
     @OneToMany (mappedBy = "joueurProprietaire")
      private List<Carte> cartes = new ArrayList<>();
 
+    @Column(nullable = false)
+    private Long ordre;
      
-
-    
     private String pseudo;
     private String avatar;
     
@@ -48,19 +48,45 @@ public class Joueur implements Serializable {
     private long nbPartiesGagnees;
     @Column(nullable = false)
     private long nbPartiesJouees;
+
+    public static class EtatJoueur {
+
+        public EtatJoueur() {
+        }
+    }
     
-    public enum typeEtatJoueur{PAS_LA_MAIN,A_LA_MAIN,SOMMEIL_PROFOND,PERDU};
+    
+    public enum typeEtatJoueur{PAS_LA_MAIN,A_LA_MAIN,SOMMEIL_PROFOND,PERDU,GAGNE };
     
     
     @Enumerated(EnumType.STRING)
-    private typeEtatJoueur etatJoueur;
+    @Column(nullable = false)
+    public typeEtatJoueur etatJoueur;
 
-    public Partie getPartieActuelle() {
-        return partieActuelle;
+    public typeEtatJoueur getEtatJoueur() {
+        return etatJoueur;
     }
 
-    public void setPartieActuelle(Partie partieActuelle) {
-        this.partieActuelle = partieActuelle;
+    public void setEtatJoueur(typeEtatJoueur etatJoueur) {
+        this.etatJoueur = etatJoueur;
+    }
+
+    public Long getOrdre() {
+        return ordre;
+    }
+
+    public void setOrdre(Long ordre) {
+        this.ordre = ordre;
+    }
+
+    
+    
+    public Partie getpartie() {
+        return partie;
+    }
+
+    public void setpartie(Partie partie) {
+        this.partie = partie;
     }
 
     public List<Carte> getCartes() {
