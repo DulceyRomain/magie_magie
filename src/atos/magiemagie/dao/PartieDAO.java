@@ -48,5 +48,13 @@ public class PartieDAO {
        return em.find(Partie.class, idPartie);
     }
     
+   /* public Partie demarrerPartie(long id){
+        EntityManager em = Persistence.createEntityManagerFactory("PU").createEntityManager();
+        
+        
+        
+     
+    }*/
+    
     
 }

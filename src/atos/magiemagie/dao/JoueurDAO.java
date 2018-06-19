@@ -40,7 +40,7 @@ public class JoueurDAO {
         }
     }
     
-    public long recupOrdreMaxPlusUnJoueur(long partieId){
+    public long definirOrdre(long partieId){
         EntityManager em = Persistence.createEntityManagerFactory("PU").createEntityManager();
         Query query = em.createQuery("SELECT MAX(j.ordre)+1 FROM Joueur j JOIN j.partie p WHERE p.id =:idPartie");
         query.setParameter("idPartie", partieId);
@@ -52,6 +52,21 @@ public class JoueurDAO {
         }
         
         return (long) res;        
+}
+    
+    public Joueur rechOrdre(long ordre ,long partieId){
+        EntityManager em = Persistence.createEntityManagerFactory("PU").createEntityManager();
+        Query query = em.createQuery("SELECT j FROM Joueur j JOIN j.partie p WHERE p.id =:idPartie AND j.ordre =:ordre");
+        query.setParameter("idPartie", partieId);
+         query.setParameter("ordre", ordre);
+        
+        List<Joueur> joueurTrouve = query.getResultList();
+        
+        if(joueurTrouve == null){
+            return null;
+        }
+        
+        return joueurTrouve.get(0);        
 }
 
     public void ajouter(Joueur joueur) {

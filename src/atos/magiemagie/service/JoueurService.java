@@ -5,6 +5,7 @@
  */
 package atos.magiemagie.service;
 
+import atos.magiemagie.dao.CarteDAO;
 import atos.magiemagie.dao.JoueurDAO;
 import atos.magiemagie.dao.PartieDAO;
 import atos.magiemagie.entity.Joueur;
@@ -22,7 +23,10 @@ public class JoueurService {
     
     private JoueurDAO dao = new JoueurDAO();
     private PartieDAO partieDAO = new PartieDAO();
-    public void rejoindrePartie(String pseudo,String avatar, long idPartie){
+    private CarteDAO cDao = new CarteDAO();
+    private CarteService cs = new CarteService();
+    
+    public Joueur rejoindrePartie(String pseudo,String avatar, long idPartie){
        
         // Recherche si le joueur existe déjà
         
@@ -34,7 +38,7 @@ public class JoueurService {
         }
         joueur.setAvatar(avatar);
         joueur.setEtatJoueur(Joueur.typeEtatJoueur.PAS_LA_MAIN);
-        long ordre =dao.recupOrdreMaxPlusUnJoueur(idPartie);
+        long ordre =dao.definirOrdre(idPartie);
         joueur.setOrdre(ordre);
         
         //Associe le joueur à la partie et vice-versa (JPA relations bidirectionellements)
@@ -50,6 +54,53 @@ public class JoueurService {
         else{
             dao.modifier(joueur);
         }
+        return joueur;
+        
+        
     }
     
+    
+    public void passerSonTour(String pseudo, long idPartie){
+        //appel du joueur 
+        Partie p = partieDAO.rechercheParID(idPartie);
+        Joueur j = j=dao.rejoindreParPseudo(pseudo);
+        
+       // pioche d'une carte
+        cs.piocherCarte(j);
+        this.passerAuJoueurSuivant(pseudo,idPartie);
+        
+    
+    
+}
+    
+    public Joueur passerAuJoueurSuivant(String pseudo, long idPartie){
+        Joueur j = dao.rejoindreParPseudo(pseudo);
+        Partie p = partieDAO.rechercheParID(idPartie);
+ 
+        j.setEtatJoueur(Joueur.typeEtatJoueur.PAS_LA_MAIN);
+        dao.modifier(j);
+        Joueur jSuivant = new Joueur();
+        long ordre = j.getOrdre()+ 1L; // Passer au  joueur suivant
+        long max = p.getJoueurs().size();
+        //Reviens à 0 quand le dernier joueur passe au joueur suivant
+        if(ordre >max){
+            jSuivant = dao.rechOrdre(1L, idPartie);
+        }else{
+            jSuivant = dao.rechOrdre(ordre, idPartie);
+        }
+        //Si l'état du joueur est différent de PAS_LA_MAIN
+        if(jSuivant.getEtatJoueur() != Joueur.typeEtatJoueur.PAS_LA_MAIN){
+          if(jSuivant.getEtatJoueur() == Joueur.typeEtatJoueur.SOMMEIL_PROFOND){
+              jSuivant.setEtatJoueur(Joueur.typeEtatJoueur.PAS_LA_MAIN);
+              dao.modifier(jSuivant);
+        }    
+    }else{
+           jSuivant.setEtatJoueur(Joueur.typeEtatJoueur.A_LA_MAIN); 
+           dao.modifier(jSuivant);
+        }
+        
+        
+        return j;
+        
+    }
 }
