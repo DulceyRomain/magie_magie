@@ -24,17 +24,17 @@ public class PartieServiceTest {
     
      private  PartieService ps = new PartieService();
     
-    //@Test
+  //  @Test
     public void test() {
          
         // Créer Nouvelle Partie
-        Partie p = ps.creerNouvellePartie("Partie 1");
+        Partie p = ps.creerNouvellePartie("indinahui");
         assertNotNull(p.getId());
         
         
     }
     
- //  @Test
+   @Test
     public void demarrerPartieOK(){
         
       //  long id = ps.creerNouvellePartie("Partie 1").getId();

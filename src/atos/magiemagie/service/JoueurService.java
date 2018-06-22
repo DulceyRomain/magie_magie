@@ -54,10 +54,10 @@ public class JoueurService {
         else{
             dao.modifier(joueur);
         }
-        return joueur;
-        
-        
+        return joueur;   
     }
+    
+    
     
     
     public void passerSonTour(String pseudo, long idPartie){
@@ -67,20 +67,32 @@ public class JoueurService {
         
        // pioche d'une carte
         cs.piocherCarte(j);
-        this.passerAuJoueurSuivant(pseudo,idPartie);
+        this.passerAuJoueurSuivant(idPartie);
         
     
     
 }
     
-    public Joueur passerAuJoueurSuivant(String pseudo, long idPartie){
-        Joueur j = dao.rejoindreParPseudo(pseudo);
+    
+    
+    public void passerAuJoueurSuivant(long idPartie){
+        
+        Joueur joueurALaMain = partieDAO.rechJoueurQuiALaMainId(idPartie);
         Partie p = partieDAO.rechercheParID(idPartie);
- 
-        j.setEtatJoueur(Joueur.typeEtatJoueur.PAS_LA_MAIN);
-        dao.modifier(j);
+        
+        //Determine si les autres joueurs ont perdu
+        //et passe le joueur a l'état gagné
+        // puis quitte la fonction
+        if(dao.determinerSiResteUnJoueur(idPartie) ){
+            joueurALaMain.setEtatJoueur(Joueur.typeEtatJoueur.GAGNE);
+            dao.modifier(joueurALaMain);
+            return ;
+        }
+        
+        joueurALaMain.setEtatJoueur(Joueur.typeEtatJoueur.PAS_LA_MAIN);
+        dao.modifier(joueurALaMain);
         Joueur jSuivant = new Joueur();
-        long ordre = j.getOrdre()+ 1L; // Passer au  joueur suivant
+        long ordre = joueurALaMain.getOrdre()+ 1L; // Passer au  joueur suivant
         long max = p.getJoueurs().size();
         //Reviens à 0 quand le dernier joueur passe au joueur suivant
         if(ordre >max){
@@ -89,18 +101,31 @@ public class JoueurService {
             jSuivant = dao.rechOrdre(ordre, idPartie);
         }
         //Si l'état du joueur est différent de PAS_LA_MAIN
-        if(jSuivant.getEtatJoueur() != Joueur.typeEtatJoueur.PAS_LA_MAIN){
-          if(jSuivant.getEtatJoueur() == Joueur.typeEtatJoueur.SOMMEIL_PROFOND){
-              jSuivant.setEtatJoueur(Joueur.typeEtatJoueur.PAS_LA_MAIN);
-              dao.modifier(jSuivant);
-        }    
-    }else{
-           jSuivant.setEtatJoueur(Joueur.typeEtatJoueur.A_LA_MAIN); 
-           dao.modifier(jSuivant);
+      
+        
+      
+        while(jSuivant.getEtatJoueur() != Joueur.typeEtatJoueur.PAS_LA_MAIN){
+                if(jSuivant.getEtatJoueur() == Joueur.typeEtatJoueur.SOMMEIL_PROFOND){
+                    jSuivant.setEtatJoueur(Joueur.typeEtatJoueur.PAS_LA_MAIN);
+                    dao.modifier(jSuivant);
+                    ordre++;
+                    if(ordre >max){
+                    jSuivant = dao.rechOrdre(1L, idPartie);
+                    }else{
+                    jSuivant = dao.rechOrdre(ordre, idPartie);
+                 }
+                }else if(jSuivant.getEtatJoueur() == Joueur.typeEtatJoueur.PERDU){
+                    ordre++;
+                    if(ordre >max){
+                    jSuivant = dao.rechOrdre(1L, idPartie);
+                    }else{
+                    jSuivant = dao.rechOrdre(ordre, idPartie);              
+                    }
+                 
+                    
         }
-        
-        
-        return j;
-        
-    }
+}
+       jSuivant.setEtatJoueur(Joueur.typeEtatJoueur.A_LA_MAIN);
+      dao.modifier(jSuivant); 
+}
 }

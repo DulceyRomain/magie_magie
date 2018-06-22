@@ -23,13 +23,7 @@ public class PartieDAO {
         EntityManager em = Persistence.createEntityManagerFactory("PU").createEntityManager();
      
      
-     Query query = em.createQuery("SELECT p "
-                                   + "FROM Partie p "
-                                   + "EXCEPT "
-                                   + "SELECT p "
-                                   + "FROM Partie p "
-                                   + "JOIN p.joueurs j "
-                                   + "WHERE j.etat IN (:etat_gagne, :etat_alamain)");
+     Query query = em.createQuery("SELECT p FROM Partie p EXCEPT SELECT p FROM Partie p JOIN p.joueurs j WHERE j.etatJoueur IN (:etat_gagne, :etat_alamain)");
         query.setParameter("etat_gagne", Joueur.typeEtatJoueur.GAGNE);
         query.setParameter("etat_alamain", Joueur.typeEtatJoueur.A_LA_MAIN);
         return query.getResultList();
@@ -48,13 +42,16 @@ public class PartieDAO {
        return em.find(Partie.class, idPartie);
     }
     
-   /* public Partie demarrerPartie(long id){
+    public Joueur rechJoueurQuiALaMainId(long partieId){
         EntityManager em = Persistence.createEntityManagerFactory("PU").createEntityManager();
         
-        
+         Query query = em.createQuery("SELECT j FROM Joueur j JOIN j.partie p WHERE p.id =:idPartie AND j.etatJoueur=:etat");
+        query.setParameter("idPartie",partieId);
+        query.setParameter("etat",Joueur.typeEtatJoueur.A_LA_MAIN);
+        return (Joueur) query.getSingleResult();
         
      
-    }*/
+    }
     
     
 }

@@ -45,7 +45,7 @@ public class PartieService {
          // Vérification nb de joueurs
          
         if(p.getJoueurs().size()< 2){
-           throw new RuntimeException("And it's gone") ;
+           throw new RuntimeException("Nombre de joueur insuffisant") ;
         }
         else{
           //MAJ Etat Joueur
