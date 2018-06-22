@@ -26,8 +26,27 @@ public class PointEntree {
     private JoueurService joueurSerivce = new JoueurService();
     private CarteService carteService = new CarteService();
     
-    public void ecranJeu (long idPartie){
+    public void ecranJeu (long idPAartie, String Pseudo){
+        long monId = 1L;
         
+        while(true){
+        long joueurQuiALaMain = .joueurQuialamain(idpartie);
+               
+        
+        if(joueurQuiALaMain == monId){
+            System.out.println("");
+            
+            String choix = new Scanner (System.in).nextLine();
+            switch (choix){
+                case "1":
+                   
+                case "2":
+                    
+                default:    
+                
+            }
+        }
+    }
     }
     
     
@@ -109,6 +128,7 @@ public class PointEntree {
                         long idPartie = s.nextLong();
                         Joueur joueur = joueurSerivce.rejoindrePartie(pseudo, avatar, (long)idPartie);
                         menuDemarrer(idPartie);
+                        ecranJeu(idPartie,pseudo);
                         
                         break;
                     case "Q":
