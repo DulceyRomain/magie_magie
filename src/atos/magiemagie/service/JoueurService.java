@@ -12,6 +12,7 @@ import atos.magiemagie.entity.Joueur;
 import static atos.magiemagie.entity.Joueur_.pseudo;
 import atos.magiemagie.entity.Partie;
 import java.util.List;
+import java.util.Scanner;
 import javax.persistence.EntityManager;
 import javax.persistence.Persistence;
 
@@ -21,16 +22,17 @@ import javax.persistence.Persistence;
  */
 public class JoueurService {
     
-    private JoueurDAO dao = new JoueurDAO();
-    private PartieDAO partieDAO = new PartieDAO();
+    private JoueurDAO jDao = new JoueurDAO();
+    private PartieDAO pDao = new PartieDAO();
     private CarteDAO cDao = new CarteDAO();
-    private CarteService cs = new CarteService();
+   
+    
     
     public Joueur rejoindrePartie(String pseudo,String avatar, long idPartie){
        
         // Recherche si le joueur existe déjà
         
-        Joueur joueur = dao.rejoindreParPseudo(pseudo);
+        Joueur joueur = jDao.rejoindreParPseudo(pseudo);
         if(joueur==null){
           //le joueur n'existe pas encire
           joueur = new Joueur();
@@ -38,35 +40,44 @@ public class JoueurService {
         }
         joueur.setAvatar(avatar);
         joueur.setEtatJoueur(Joueur.typeEtatJoueur.PAS_LA_MAIN);
-        long ordre =dao.definirOrdre(idPartie);
+        long ordre =jDao.definirOrdre(idPartie);
         joueur.setOrdre(ordre);
         
         //Associe le joueur à la partie et vice-versa (JPA relations bidirectionellements)
-        Partie p = partieDAO.rechercheParID(idPartie)  ;
+        Partie p = pDao.rechercheParID(idPartie)  ;
         
         joueur.setpartie(p);
         List<Joueur> listeJoueurs= p.getJoueurs();
         listeJoueurs.add(joueur);
         
         if(joueur.getId()==null){
-            dao.ajouter(joueur);
+            jDao.ajouter(joueur);
          }
         else{
-            dao.modifier(joueur);
+            jDao.modifier(joueur);
         }
         return joueur;   
     }
     
     
-    
+    public Joueur ciblerUnJoueur (){
+       Scanner s = new Scanner(System.in);
+        System.out.print("Sélectionner le joueur à cibler : ");
+        String pseudo = s.nextLine();
+        Joueur joueur = jDao.rejoindreParPseudo(pseudo);
+        
+        return joueur;
+        
+    }
     
     public void passerSonTour(String pseudo, long idPartie){
         //appel du joueur 
-        Partie p = partieDAO.rechercheParID(idPartie);
-        Joueur j = j=dao.rejoindreParPseudo(pseudo);
+        Partie p = pDao.rechercheParID(idPartie);
+        Joueur j = j=jDao.rejoindreParPseudo(pseudo);
         
        // pioche d'une carte
-        cs.piocherCarte(j);
+        CarteService cService = new CarteService();
+        cService.piocherCarte(j);
         this.passerAuJoueurSuivant(idPartie);
         
     
@@ -77,28 +88,29 @@ public class JoueurService {
     
     public void passerAuJoueurSuivant(long idPartie){
         
-        Joueur joueurALaMain = partieDAO.rechJoueurQuiALaMainId(idPartie);
-        Partie p = partieDAO.rechercheParID(idPartie);
+        Joueur joueurALaMain = pDao.rechJoueurQuiALaMainId(idPartie);
+        Partie p = pDao.rechercheParID(idPartie);
         
         //Determine si les autres joueurs ont perdu
         //et passe le joueur a l'état gagné
         // puis quitte la fonction
-        if(dao.determinerSiResteUnJoueur(idPartie) ){
+        if(jDao.determinerSiResteUnJoueur(idPartie) ){
             joueurALaMain.setEtatJoueur(Joueur.typeEtatJoueur.GAGNE);
-            dao.modifier(joueurALaMain);
+            jDao.modifier(joueurALaMain);
+            System.out.println("YOU WIN, FATALITY");
             return ;
         }
         
         joueurALaMain.setEtatJoueur(Joueur.typeEtatJoueur.PAS_LA_MAIN);
-        dao.modifier(joueurALaMain);
+        jDao.modifier(joueurALaMain);
         Joueur jSuivant = new Joueur();
         long ordre = joueurALaMain.getOrdre()+ 1L; // Passer au  joueur suivant
         long max = p.getJoueurs().size();
         //Reviens à 0 quand le dernier joueur passe au joueur suivant
         if(ordre >max){
-            jSuivant = dao.rechOrdre(1L, idPartie);
+            jSuivant = jDao.rechOrdre(1L, idPartie);
         }else{
-            jSuivant = dao.rechOrdre(ordre, idPartie);
+            jSuivant = jDao.rechOrdre(ordre, idPartie);
         }
         //Si l'état du joueur est différent de PAS_LA_MAIN
       
@@ -107,25 +119,25 @@ public class JoueurService {
         while(jSuivant.getEtatJoueur() != Joueur.typeEtatJoueur.PAS_LA_MAIN){
                 if(jSuivant.getEtatJoueur() == Joueur.typeEtatJoueur.SOMMEIL_PROFOND){
                     jSuivant.setEtatJoueur(Joueur.typeEtatJoueur.PAS_LA_MAIN);
-                    dao.modifier(jSuivant);
+                    jDao.modifier(jSuivant);
                     ordre++;
                     if(ordre >max){
-                    jSuivant = dao.rechOrdre(1L, idPartie);
+                    jSuivant = jDao.rechOrdre(1L, idPartie);
                     }else{
-                    jSuivant = dao.rechOrdre(ordre, idPartie);
+                    jSuivant = jDao.rechOrdre(ordre, idPartie);
                  }
                 }else if(jSuivant.getEtatJoueur() == Joueur.typeEtatJoueur.PERDU){
                     ordre++;
                     if(ordre >max){
-                    jSuivant = dao.rechOrdre(1L, idPartie);
+                    jSuivant = jDao.rechOrdre(1L, idPartie);
                     }else{
-                    jSuivant = dao.rechOrdre(ordre, idPartie);              
+                    jSuivant = jDao.rechOrdre(ordre, idPartie);              
                     }
                  
                     
         }
 }
        jSuivant.setEtatJoueur(Joueur.typeEtatJoueur.A_LA_MAIN);
-      dao.modifier(jSuivant); 
+       jDao.modifier(jSuivant); 
 }
 }

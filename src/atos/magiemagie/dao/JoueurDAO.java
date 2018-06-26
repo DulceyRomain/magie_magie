@@ -89,18 +89,7 @@ public class JoueurDAO {
 }
 
     
-    public List<Joueur> listeJoueur(long idPartie) {
-        EntityManager em = Persistence.createEntityManagerFactory("PU").createEntityManager();
-        
-        Query query = em.createQuery("SELECT j FROM Joueur j JOIN j.partie p WHERE p.id=:idPartie ");
-                         
-                                  
-        query.setParameter("idPartie", idPartie);
-
-        List<Joueur> joueurs = query.getResultList();
-        
-        return joueurs;
-    }
+   
     
     
     public void ajouter(Joueur joueur) {

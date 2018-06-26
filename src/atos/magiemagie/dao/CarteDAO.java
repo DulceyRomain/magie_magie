@@ -20,7 +20,7 @@ import javax.persistence.Query;
 public class CarteDAO {
     
     private JoueurDAO jDao = new JoueurDAO();
-    private PartieDAO partieDAO = new PartieDAO();
+    private PartieDAO pDAO = new PartieDAO();
     private Carte carte = new Carte();
     public void addCarte ( Carte carte){
         EntityManager em = Persistence.createEntityManagerFactory("PU").createEntityManager();
@@ -44,13 +44,15 @@ public class CarteDAO {
     public List<Carte> rechercherCartesParId (long idJoueur){
         EntityManager em = Persistence.createEntityManagerFactory("PU").createEntityManager();
         
-         Query query = em.createQuery("SELECT c FROM Carte c JOIN c.joueurProprietaire j WHERE j.id=:idJoueur");
+         Query query = em.createQuery("SELECT c FROM Carte c JOIN c.joueurProprietaire j WHERE j.id=:idJoueurLanceur");
          query.setParameter("idJoueurLanceur", idJoueur);
-         Object res = query.getSingleResult();
+        
     
         List<Carte> cartes = query.getResultList();
         return cartes;
     }
+    
+    
 
     public List<Joueur> listeAutresJoueursParPartieId(long idJoueurAExclure, long idPartie) {
         EntityManager em = Persistence.createEntityManagerFactory("PU").createEntityManager();
@@ -65,6 +67,8 @@ public class CarteDAO {
         
         return joueurs;
     }
+    
+   
     
     
     

@@ -5,6 +5,9 @@
  */
 package atos.magiemagie.main;
 
+import atos.magiemagie.dao.CarteDAO;
+import atos.magiemagie.dao.JoueurDAO;
+import atos.magiemagie.dao.PartieDAO;
 import atos.magiemagie.entity.Carte;
 import atos.magiemagie.entity.Joueur;
 import atos.magiemagie.entity.Partie;
@@ -25,41 +28,89 @@ public class PointEntree {
     private PartieService partieService = new PartieService();
     private JoueurService joueurSerivce = new JoueurService();
     private CarteService carteService = new CarteService();
+    private JoueurDAO jDao = new JoueurDAO();
+    private PartieDAO pDao = new PartieDAO();
+    private CarteDAO cDao = new CarteDAO();
     
-    public void ecranJeu (long idPAartie, String Pseudo){
-        long monId = 1L;
+    
+    public void ecranJeu (long idPartie, long monId) throws InterruptedException{
+        Scanner s = new Scanner(System.in);
+        String choix = new String();
+        
+       
         
         while(true){
-        long joueurQuiALaMain = .joueurQuialamain(idpartie);
-               
-        
-        if(joueurQuiALaMain == monId){
-            System.out.println("");
-            
-            String choix = new Scanner (System.in).nextLine();
-            switch (choix){
-                case "1":
-                   
-                case "2":
-                    
-                default:    
+              long joueurQuiALaMain = pDao.rechJoueurQuiALaMainId(idPartie).getId();
+              if(joueurQuiALaMain == monId){
+                System.out.println("----------------------------------------------------------------- ");
+                System.out.println("--------------       A TOI DE JOUER       ----------------------- ");
+                System.out.println("------------------------------------------------------------------");
+                System.out.println(" Menu Partie démarée :--------------------------------------------" );
+                System.out.println("------------------------------------------------------------------");
+                String joueurActif = pDao.rechJoueurQuiALaMainId(idPartie).getPseudo();
+                System.out.println("Joueur actif : " + joueurActif);
+                System.out.println("------------------       Liste Carte       ----------------------");
+                long idJoueurLanceur = pDao.rechJoueurQuiALaMainId(idPartie).getId();
+                List<Carte> cartes = cDao.rechercherCartesParId(idJoueurLanceur);
+                int taille = cartes.size();
+                System.out.println("Nombre de Carte : " + taille);
+                System.out.println("----------------------------------------------------------------- ");
+                for(Carte carte : cartes){
+                    System.out.println(carte.getIngredient() + " : " +carte.getId());
+                }
                 
-            }
+                System.out.println("------------------------------------------------------------------");
+                System.out.println("1. Lancer un sort");
+                System.out.println("2. Passer son tour");
+                System.out.println("------------------------------------------------------------------");
+                System.out.print("Votre choix > ");
+                System.out.println("");
+                System.out.println("");
+
+                choix = s.nextLine();
+                
+                switch(choix){
+                    case "1" :
+                        System.out.println("--------------       TABLE DES SORTS       ------------");
+                        System.out.println("INVISIBILITE : corne de licorne + bave de crapaud");
+                        System.out.println("PHILTRE D_AMOUR : corne de licorne + mandragore");
+                        System.out.println("HYPNOSE : bave de crapaud + lapis-lazuli");
+                        System.out.println("DIVINATION : lapis-lazuli + aile-de chauve-souris");
+                        System.out.println("SOMMEIL-PROFOND : mandragore +aile de chauve-souris");
+                       
+                        System.out.print("Sélectionner la 1 ère carte à utiliser : ");
+                        long carte1 = s.nextLong();
+                        System.out.print("Sélectionner la 2ème carte à utiliser : ");
+                        long carte2 = s.nextLong();
+                        carteService.lancerSort(idJoueurLanceur, idPartie, carte1, carte2);
+                        break;
+                        
+                    case "2" :
+                        joueurSerivce.passerSonTour(joueurActif, idPartie);
+                        break;
+                }
+        }else{
+            Thread.sleep(1000);
+            
         }
+        }
+       
+        
+        
     }
-    }
     
     
+  
     
-    public void menuDemarrer(long idPartie){
+    
+    public void menuDemarrer(long idPartie,long monId) throws InterruptedException{
         Scanner s = new Scanner(System.in);
         String choix = new String();
       
-        
-        do{
+        while(true){
      
                 System.out.println("------------------------------------------------------------------");
-                System.out.println(" Menu Partie :" );
+                System.out.println(" Menu Lancement Partie :------------------------------------------");
                 System.out.println("------------------------------------------------------------------");
                 System.out.println("1. Démarrer la partie");
                 System.out.println("------------------------------------------------------------------");
@@ -67,16 +118,18 @@ public class PointEntree {
 
 
                 choix = s.nextLine();
+               
                 
-                switch(choix){
-                    case "1" :
-                        partieService.demarrerPartie(idPartie);
-                        break;                        
+                if(choix.equals("1")){
+                       partieService.demarrerPartie(idPartie);
+                       ecranJeu(idPartie,monId);                    
+                }else if ( pDao.rechJoueurQuiALaMainId(idPartie) != null){
+                       ecranJeu(idPartie,monId); 
                 }
-        }while(! choix.equals("Q"));
+        }
     }
     
-    public void menuPrincipal(){
+    public void menuPrincipal() throws InterruptedException{
         
          Scanner s = new Scanner(System.in);
          String choix = new String();
@@ -84,7 +137,7 @@ public class PointEntree {
                 
                 
                 System.out.println("------------------------------------------------------------------");
-                System.out.println("Menu Principal :                                                  ");
+                System.out.println("Menu Principal :--------------------------------------------------");
                 System.out.println("------------------------------------------------------------------");
                 System.out.println("1. Lister les parties non démarrés");
                 System.out.println("2. Créer une partie");
@@ -102,11 +155,12 @@ public class PointEntree {
                     case "1":
                         List<Partie> parties = partieService.listerPartiesNonDemarrees();
                         for(Partie p : parties){
-                            System.out.println("Nom de Partie : "+p.getNom()+ " - ID : "+ p.getId());
-                            if(parties.isEmpty()){
-                                System.out.println("Il n'y a aucune liste non démarées");
-                            }
+                            System.out.println("Nom de Partie : "+ p.getId()+ " : "+p.getNom());
+                            
                         }
+                        if(parties.isEmpty()){
+                                System.out.println("Et y'a plus rien !");
+                            }
                         break;
                     case "2":
                         
@@ -118,8 +172,13 @@ public class PointEntree {
                         break;
                         
                     case "3":
-                        
-                        
+                        List<Partie> partiesEnAttente = partieService.listerPartiesNonDemarrees();
+                        for(Partie p : partiesEnAttente){
+                            System.out.println("Nom de Partie : "+p.getNom()+ " - ID : "+ p.getId());
+                            if(partiesEnAttente.isEmpty()){
+                                System.out.println("Il n'y a aucune liste non démarées");
+                            }
+                        } 
                         System.out.print("Veuillez choisir votre pseudo : ");
                         String pseudo = s.nextLine();
                         System.out.print("Veuillez choisir votre avatar : ");
@@ -127,8 +186,8 @@ public class PointEntree {
                         System.out.print("Veuillez choisir la partie à rejoindre : ");
                         long idPartie = s.nextLong();
                         Joueur joueur = joueurSerivce.rejoindrePartie(pseudo, avatar, (long)idPartie);
-                        menuDemarrer(idPartie);
-                        ecranJeu(idPartie,pseudo);
+                        menuDemarrer(idPartie,joueur.getId());
+                     
                         
                         break;
                     case "Q":
@@ -142,7 +201,7 @@ public class PointEntree {
     }
         
    
-     public static void main(String[] args) {
+     public static void main(String[] args) throws InterruptedException {
         
          
         

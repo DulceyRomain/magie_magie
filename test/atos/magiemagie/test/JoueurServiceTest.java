@@ -48,7 +48,7 @@ public class JoueurServiceTest {
     @Test
     public void lancerSort(){
         //carteService.lancerSort(3, 4, 1, 17, 18);
-//        carteService.lancerSort(3,null,1, 19, 20);
+        carteService.lancerSort(3,1, 19, 20);
     }
     
    // @Test
